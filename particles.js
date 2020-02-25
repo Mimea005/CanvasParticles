@@ -1,15 +1,40 @@
+//SECTION globals
 const canvas = document.querySelector("canvas");
-//preparing the scene
+const ctx = canvas.getContext("2d");
+
+let renderList = [];
+let prevAnimTime;
+
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 
+
+//SECTION event listeners
 window.addEventListener("resize",()=>{
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
 })
 
-const ctx = canvas.getContext("2d");
-renderList = [];
+document.addEventListener("keypress", (e)=>{
+    if (e.keyCode == 102) {
+        console.log(`'F' is pressed`);
+        toggleFullScreen()
+    }
+})
+
+canvas.addEventListener("fullscreenchange",(e)=>{
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+})
+
+//SECTION methods
+function toggleFullScreen() {
+    if(!document.fullscreenElement) {
+        canvas.requestFullscreen();
+    } else {
+        document.exitFullscreen();
+    }
+}
 
 
 function Particle (pos, velocity, radius, color, lifetime) {
@@ -71,11 +96,10 @@ function Particle (pos, velocity, radius, color, lifetime) {
     }
 }
 
-let prevAnimTime;
 let animate = function (currTime){
     if(!prevAnimTime){prevAnimTime=currTime}
     if(currTime == prevAnimTime){
-        console.log(currTime);
+        console.log(`repeated time: ${currTime}`);
     }
     let deltaTime = currTime - prevAnimTime;
 
@@ -88,11 +112,20 @@ let animate = function (currTime){
             for(let c = 0; c<l;c++){
                 createParticle();
             }
-            console.log(renderList.length);
+            //console.log(`Particle count: ${renderList.length}`);
         } else {
             renderList[i].update(deltaTime);
         }
     }
+
+    let velocitySumX = 0;
+    renderList.forEach(element => velocitySumX += Math.abs(element.velocity.x));
+
+    let velocitySumY = 0;
+    renderList.forEach(element => velocitySumY += Math.abs(element.velocity.y));
+
+    console.log(`average velocity x: ${velocitySumX/renderList.length} y: ${velocitySumY/renderList.length}`);
+
 
     prevAnimTime = currTime;
     requestAnimationFrame(animate);
@@ -108,10 +141,10 @@ let createParticle = function (){
         "#7AD9D0",
     ]
 
-    let radius = Math.random() * 4 + 2;
+    let radius = Math.random() * 2 + 2;
     let velocity = {
-        x: ((Math.random()-0.5) * 2),
-        y: ((Math.random()-0.5) * 2),
+        x: ((Math.random()-0.5)),
+        y: ((Math.random()-0.5)),
     }
     let pos = {
         x: Math.random() * (canvas.width - radius*2)+radius,
@@ -124,8 +157,9 @@ let createParticle = function (){
     new Particle(pos,velocity,radius,color, lifetime);
 }
 
+//SECTION runtime
 //test
-for (let i=0; i<25´0;i++){
+for (let i=0; i<250;i++){
     createParticle();
 }
 
